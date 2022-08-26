@@ -1,4 +1,5 @@
 #include "JSITemplateHostObject.h"
+#include "Utils/JSIMacros.h"
 #include <jsi/jsi.h>
 #include <thread>
 
@@ -22,55 +23,35 @@ vector<PropNameID> JSITemplateHostObject::getPropertyNames(Runtime& runtime) {
 Value JSITemplateHostObject::get(Runtime& runtime, const PropNameID& propNameId) {
 	auto propName = propNameId.utf8(runtime);
 
-	if (propName == "greeting") {
-		return Value(runtime, String::createFromUtf8(runtime, "Hello, World!"));
-	}
-	if (propName == "greet") {
-		auto greet = Function::createFromHostFunction(runtime,
-													  PropNameID::forUtf8(runtime, "greet"),
-													  1,
-													  [](Runtime &runtime,
-															  const Value &thisValue,
-															  const Value *arguments,
-															  size_t count) -> Value {
-			string name;
-			if (arguments[0].isString()) {
-				name = arguments[0].asString(runtime).utf8(runtime);
-			} else {
-				name = "World";
-			}
-			return Value(runtime, String::createFromUtf8(runtime, "Hello, " + name + "!"));
-		});
-		return greet;
-	}
-	if (propName == "greetAsync") {
-		auto greetAsync = Function::createFromHostFunction(runtime,
-														   PropNameID::forUtf8(runtime, "greetAsync"),
-														   2,
-														   [](Runtime &runtime,
-																   const Value &thisValue,
-																   const Value *arguments,
-																   size_t count) -> Value {
-			if (!arguments[1].isObject() && !arguments[1].asObject(runtime).isFunction(runtime)) {
-				throw runtime_error("Callback must be a function");
-			}
-			auto callback = make_shared<Function>(arguments[1].asObject(runtime).asFunction(runtime));
-			string name;
-			if (arguments[0].isString()) {
-				name = arguments[0].asString(runtime).utf8(runtime);
-			} else {
-				name = "World";
-			}
-			auto runner = [&runtime](const string &name, const shared_ptr<Function> &callback) {
-				callback->call(runtime, Value::null(), Value(runtime, String::createFromUtf8(runtime, "Hello, " + name + "!")));
-			};
-			thread executor(runner, name, callback);
-			executor.detach();
+  JSI_HOSTOBJECT_STRING("greeting", "Hello, World!");
+  JSI_HOSTOBJECT_METHOD("greet", 1, {
+    string name;
+    if (arguments[0].isString()) {
+      name = arguments[0].asString(runtime).utf8(runtime);
+    } else {
+      name = "World";
+    }
+    return Value(runtime, String::createFromUtf8(runtime, "Hello, " + name + "!"));
+  });
+  JSI_HOSTOBJECT_METHOD("greetAsync", 2, {
+    if (!arguments[1].isObject() && !arguments[1].asObject(runtime).isFunction(runtime)) {
+      throw runtime_error("Callback must be a function");
+    }
+    auto callback = make_shared<Function>(arguments[1].asObject(runtime).asFunction(runtime));
+    string name;
+    if (arguments[0].isString()) {
+      name = arguments[0].asString(runtime).utf8(runtime);
+    } else {
+      name = "World";
+    }
+    auto runner = [&runtime](const string &name, const shared_ptr<Function> &callback) {
+      callback->call(runtime, Value::null(), Value(runtime, String::createFromUtf8(runtime, "Hello, " + name + "!")));
+    };
+    thread executor(runner, name, callback);
+    executor.detach();
 
-			return Value::undefined();
-		});
-		return greetAsync;
-	}
+    return Value::undefined();
+  });
 
 	return Value::undefined();
 }

@@ -6,6 +6,8 @@ declare type JSITemplate = {
 declare global {
     function nativeCallSyncHook(): unknown;
     var __JSITemplateProxy: JSITemplate | undefined;
+    var __greetJava: ((name: string) => string) | undefined;
 }
 export declare const JSITemplate: JSITemplate;
+export declare const greetJava: ((name: string) => string) | undefined;
 export {};

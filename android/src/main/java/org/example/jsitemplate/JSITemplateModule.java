@@ -34,7 +34,7 @@ public class JSITemplateModule extends ReactContextBaseJavaModule {
       JavaScriptContextHolder jsContext = getReactApplicationContext().getJavaScriptContextHolder();
 
       Log.i(NAME, "Installing JSI Bindings for react-native-jsi-template...");
-      nativeInstall(jsContext.get());
+      nativeInstall(jsContext.get(), this);
       Log.i(NAME, "Successfully installed JSI Bindings for react-native-jsi-template!");
 
       return true;
@@ -44,5 +44,9 @@ public class JSITemplateModule extends ReactContextBaseJavaModule {
     }
   }
 
-  private static native void nativeInstall(long jsiPtr);
+  private static native void nativeInstall(long jsiPtr, Object thiz);
+
+  public String greetJava(String name) {
+    return "Hello, " + name + "!";
+  }
 }

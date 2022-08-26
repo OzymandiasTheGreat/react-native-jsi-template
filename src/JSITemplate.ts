@@ -10,6 +10,7 @@ type JSITemplate = {
 declare global {
   function nativeCallSyncHook(): unknown;
   var __JSITemplateProxy: JSITemplate | undefined;
+  var __greetJava: ((name: string) => string) | undefined;
 }
 
 // Check if the constructor exists. If not, try installing the JSI bindings.
@@ -68,3 +69,4 @@ if (global.__JSITemplateProxy == null) {
 }
 
 export const JSITemplate = global.__JSITemplateProxy;
+export const greetJava = global.__greetJava;
